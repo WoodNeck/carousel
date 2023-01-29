@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "outDir": "./outjs/",
+    "module": "es6",
+    "target": "es6",
+    "moduleResolution": "node",
+    "lib": ["ES2017", "dom"],
+    "sourceMap": true,
+    "strictNullChecks": true,
+    "downlevelIteration": true,
+    "experimentalDecorators": true,
+    "esModuleInterop": true
+  },
+  "include": [
+    "./src/**/*.ts",
+    "./test/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
