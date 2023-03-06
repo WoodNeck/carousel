@@ -5,6 +5,7 @@ import System from "../System";
 import State from "../../core/external/State";
 import * as ID from "../id";
 import SystemContext from "../SystemContext";
+import SlideQuery from "../../slide/query/SlideQuery";
 
 class OneByOneControl extends Control {
   public readonly refs: System["refs"] = {
@@ -37,34 +38,46 @@ class OneByOneControl extends Control {
   }
 
   private _onInputDown = () => {
-    if (!this._carousel) return;
+    const carousel = this._carousel;
+    const slider = this.refs[ID.SLIDER];
+    if (!carousel || !slider) return;
 
-    this._carousel.state.change(State.Hold);
+    carousel.state.change(State.Hold);
   };
 
   private _onInputMove = (delta: number) => {
-    if (!this._carousel) return;
-
-    if (!this._carousel.state.is(State.Animating)) {
-      this._carousel.state.change(State.Animating);
-    }
-
+    const carousel = this._carousel;
     const slider = this.refs[ID.SLIDER];
-    if (!slider) return;
+    if (!carousel || !slider) return;
+
+    if (!carousel.state.is(State.Animating)) {
+      carousel.state.change(State.Animating);
+    }
 
     slider.setSlideDelta(delta);
   };
 
-  private _onInputUp = () => {
-    if (!this._carousel) return;
+  private _onInputUp = async (delta: number) => {
+    const carousel = this._carousel;
+    const slider = this.refs[ID.SLIDER];
+    if (!carousel || !slider || delta === 0) return;
 
-    this._carousel.state.change(State.Idle);
+    const current = carousel.slides.query(SlideQuery.Current).exec()[0];
+    const newSlideIndex = delta > 0 ? current.index + 1 : current.index - 1;
+
+    const fulfilled = await slider.slideTo(newSlideIndex);
+
+    if (fulfilled) {
+      carousel.state.change(State.Idle);
+    }
   };
 
   private _onInputCancel = () => {
-    if (!this._carousel) return;
+    const carousel = this._carousel;
+    const slider = this.refs[ID.SLIDER];
+    if (!carousel || !slider) return;
 
-    this._carousel.state.change(State.Idle);
+    carousel.state.change(State.Idle);
   };
 }
 

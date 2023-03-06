@@ -50,6 +50,14 @@ const carousel = new Carousel<PanelData>()
       .add(SlideQuery.Invisible(2), cursor => cursor.back)
       .exec();
 
+    // 선택해서 slide modifier 추가
+    carousel.slides
+      // 내부에 이미지가 있는 슬라이드만 선택
+      .query(new SlideQuery(slide => !!slide.element.querySelector("img")))
+      .addModifier(new LazyLoadModifier)
+      .addModifier(new ResizeObserverModifier)
+      .addModifier(new OnVisibleModifier) // IntersectionObserver 사용 (iOS 12.2+)
+
     // 패널 콘텐츠 로드
     panelsToLoad.map(async panel => {
       // 커스텀 데이터 지원
@@ -57,7 +65,7 @@ const carousel = new Carousel<PanelData>()
 
       // HTML 로드라고 가정
       const res = await fetch("SOME_TRUSTED_URL?id=" + id);
-      panel.element.innerHTML = res;
+      panel.element.innerText = res;
     });
   })
   // 사용자 클릭시 안보이는 패널이 로드중이 아닐 경우 로드

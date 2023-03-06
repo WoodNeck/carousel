@@ -1,8 +1,8 @@
 import Carousel from "../../Carousel";
 import SlideRenderer from "./SlideRenderer";
-import ElementSlide from "../../core/external/slide/ElementSlide";
+import ElementSlide from "../../slide/ElementSlide";
 import SystemContext from "../SystemContext";
-import type SlideCollection from "../../core/internal/SlideCollection";
+import type SlideCollection from "../../core/external/SlideCollection";
 
 interface StandardRendererOptions {
   wrapperSelector: string;
@@ -51,8 +51,9 @@ class StandardRenderer extends SlideRenderer {
   }
 
   private _onPanelChange = (mutations: MutationRecord[]) => {
-    if (!this._carousel || !this._carousel.root) return;
-    if (!this._carousel.wrapper) {
+    const carousel = this._carousel;
+    if (!carousel || !carousel.root) return;
+    if (!carousel.wrapper) {
       throw new Error("Can't init StandardRenderer without wrapper element.");
     }
 
@@ -71,22 +72,25 @@ class StandardRenderer extends SlideRenderer {
     if (added.length <= 0 && removed.length <= 0) return;
 
     // 현재 슬라이드 엘리먼트
-    const updated = this._getUpdatedSlides(this._carousel.wrapper, this._carousel.slides);
+    const updated = this._getUpdatedSlides(carousel.wrapper, carousel.slides);
 
-    this._carousel.slides
+    carousel.slides
       .clear()
       .add(updated);
 
-    console.log(this._carousel.slides.list.map(slide => slide.size));
 
     // TODO: 슬라이더 & 컨트롤에 업데이트 정보 전달
   };
 
-  private _getUpdatedSlides(wrapper: HTMLElement, slides: SlideCollection): ElementSlide[] {
+  private _getUpdatedSlides(wrapper: HTMLElement, collection: SlideCollection): ElementSlide[] {
     const elements = this._getSlideElements(wrapper.children);
+    const slides = collection.all;
+
+    // FIXME:
+    // 처음 엘리먼트를 가져올 때, 만약 엘리먼트에 이미 slideIndex가 있을 경우 문제 발생
     const updated = elements.map(el => {
       // 이미 슬라이드가 있었으면 기존것을 사용
-      if (el.dataset.slideIndex) return slides.list[el.dataset.slideIndex];
+      if (el.dataset.slideIndex) return slides[el.dataset.slideIndex];
       // 처음보는 엘리먼트일경우 슬라이드를 새로 생성
       else return new ElementSlide(el);
     });

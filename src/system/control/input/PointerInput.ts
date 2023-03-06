@@ -6,7 +6,7 @@ const CANCEL = "pointercancel";
 class PointerInput {
   private _onDown: () => any;
   private _onMove: (delta: number) => any;
-  private _onUp: () => any;
+  private _onUp: (delta: number) => any;
   private _onCancel: () => any;
 
   private _el: HTMLElement | null;
@@ -52,7 +52,7 @@ class PointerInput {
     console.log("DOWN", evt);
 
     // 2손가락 터치 등은 무시
-    if (!evt.isPrimary) return;
+    if (!this._isPrimaryInput(evt)) return;
 
     const el = this._el!;
     el.setPointerCapture(evt.pointerId);
@@ -64,6 +64,7 @@ class PointerInput {
   };
 
   private _onPointerMove = (evt: PointerEvent) => {
+    // 마우스의 경우 이벤트 핸들러가 추가되지 않음
     if (!evt.isPrimary) return;
 
     // 입력이 왼쪽으로 움직이면, transform이 반대로 적용되어야 하므로
@@ -76,14 +77,15 @@ class PointerInput {
   };
 
   private _onPointerUp = (evt: PointerEvent) => {
-    if (!evt.isPrimary) return;
-
     console.log("UP", evt);
 
+    if (!evt.isPrimary) return;
+
     const el = this._el!;
+    const delta = this._delta;
     this._clearSubevents(el);
 
-    this._onUp();
+    this._onUp(delta);
   };
 
   // 스크롤 발생 등으로 인한 cancel
@@ -99,6 +101,11 @@ class PointerInput {
 
   private _willScroll(evt: PointerEvent): boolean {
     return evt.pointerType === "touch" && this._delta < 10;
+  }
+
+  private _isPrimaryInput(evt: PointerEvent): boolean {
+    if (evt.pointerType === "touch") return evt.isPrimary;
+    return evt.button === 0;
   }
 }
 

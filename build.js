@@ -1,3 +1,4 @@
+/* eslint-env node */
 const { build, analyzeMetafile } = require("esbuild");
 
 const buildModule = async format => {
@@ -5,7 +6,7 @@ const buildModule = async format => {
     const result = await build({
       format,
       entryPoints: ["./src/index.ts"],
-      outfile: `./heos.${format}.js`,
+      outfile: `./lib/carousel.${format}.js`,
       bundle: true,
       minify: true,
       sourcemap: true,
@@ -17,12 +18,12 @@ const buildModule = async format => {
     process.stderr.write(err.stderr);
     process.exit(1);
   }
-}
+};
 
 const run = async () => {
   await buildModule("esm");
   await buildModule("cjs");
   await buildModule("iife");
-}
+};
 
 run();
